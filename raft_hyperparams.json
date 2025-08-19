@@ -1,0 +1,5 @@
+{
+    "learning_rate": 0.0002,
+    "epochs": 3,
+    "device": "cuda"
+}
