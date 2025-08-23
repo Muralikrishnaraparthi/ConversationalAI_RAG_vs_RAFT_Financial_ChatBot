@@ -13,7 +13,7 @@ import json
 from huggingface_hub import login, InferenceClient
 
 # This is the most important function. It loads all heavy components and caches them.
-@st.cache_resource
+@st.cache_resource(ttl=86400)  # Cache for 24 hours
 def load_resources():
     """Loads all necessary models, tokenizers, and data indexes."""
     embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
@@ -23,46 +23,28 @@ def load_resources():
         bm25_index_small = pickle.load(f)
     faiss_index_small = faiss.read_index("faiss_index_small.bin")
 
-    # Authenticate with Hugging Face Hub
-    huggingface = st.secrets.get("huggingface")
+        # Get Hugging Face token from Streamlit secrets
+    huggingface_token = st.secrets.get("huggingface")
+    login(token=huggingface_token)
 
-    if huggingface:
-        # Use the login function to set the token for the session
-        # This is a good practice for general authentication
-        login(token=huggingface)
-        
-        # It's more robust to also pass the token directly to the client
-        # This ensures the client is always authenticated
-        rag_pipeline = InferenceClient(token=huggingface)
-    else:
-        st.error("Hugging Face token not found. Please add your secret.")
-        rag_pipeline = None # Set the client to None to handle later errors gracefully
-    
-    # 📝 Load the tokenizers, which are small files
-    tokenizer_rag = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.1")
-    tokenizer_ft = tokenizer_rag  # RAFT uses the same tokenizer
-    # The full models are NOT loaded locally to save memory
-    model_ft = None
-    # model_rag = None
+    # Load RAG Model from Hugging Face Hub
+    model_name_rag = "mistralai/Mistral-7B-Instruct-v0.1"
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16
+    )
+    tokenizer_rag = AutoTokenizer.from_pretrained(model_name_rag)
 
-    # # Load RAG Model from Hugging Face Hub
-    # model_name_rag = "mistralai/Mistral-7B-Instruct-v0.1"
-    # bnb_config = BitsAndBytesConfig(
-    #     load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16
-    # )
-    # tokenizer_rag = AutoTokenizer.from_pretrained(model_name_rag)
+    # FIX: Removed the 'device_map="auto"' argument
+    model_rag = AutoModelForCausalLM.from_pretrained(
+        model_name_rag,
+        quantization_config=bnb_config
+    )
 
-    # # FIX: Removed the 'device_map="auto"' argument
-    # model_rag = AutoModelForCausalLM.from_pretrained(
-    #     model_name_rag,
-    #     quantization_config=bnb_config
-    # )
+    rag_pipeline = pipeline("text-generation", model=model_rag, tokenizer=tokenizer_rag, max_new_tokens=256, temperature=0.1)
 
-    # rag_pipeline = pipeline("text-generation", model=model_rag, tokenizer=tokenizer_rag, max_new_tokens=256, temperature=0.1)
-
-    # # For simplicity, we'll use the base RAG model for the RAFT path in this deployment.
-    # model_ft = model_rag
-    # tokenizer_ft = tokenizer_rag
+    # For simplicity, we'll use the base RAG model for the RAFT path in this deployment.
+    model_ft = model_rag
+    tokenizer_ft = tokenizer_rag
 
     # Load chunk data (ensure rag_chunks_data.json is uploaded)
     with open("rag_chunks_data.json", "r") as f:
@@ -72,8 +54,7 @@ def load_resources():
     index_sets = {"small": {"faiss": faiss_index_small, "bm25": bm25_index_small, "chunks": rag_chunks_small}}
 
     # Return all the loaded resources
-    # return embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft
-    return embedding_model, index_sets, rag_pipeline, tokenizer_rag, model_ft, tokenizer_ft
+    return embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft
 
 # ==============================================================================
 # HELPER FUNCTIONS BELOW THIS LINE
@@ -441,103 +422,60 @@ def extract_comparative_values(context, metric_aliases):
 # RAG Generative
 #############################
 def generate_rag_response(query, retrieved_texts, rag_pipeline, tokenizer_rag):
+    context = "\n".join(retrieved_texts)
     messages = [
-        {"role": "user", "content": f"Context:\n{retrieved_texts}\n\nQuestion:\n{query}"}
+        {"role": "system", "content": "You are a helpful financial assistant. Answer ONLY based on the provided context. Be concise. If the answer is not in the context, say 'Information not available.'"},
+        {"role": "user", "content": f"Context:\n{context}\n\nQuestion:\n{query}\n\nDirect Answer:"}
     ]
-    
     prompt = tokenizer_rag.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-
-    try:
-        response = rag_pipeline.text_generation(
-            model="mistralai/Mistral-7B-Instruct-v0.1",
-            prompt=prompt,
-            max_new_tokens=256,
-            temperature=0.1
-        )
-        return response.strip()
-    except Exception as e:
-        print(f"API Error: {e}")
-        return "Information not available from the API."
-
-# def generate_rag_response(query, retrieved_texts, rag_pipeline, tokenizer_rag):
-#     context = "\n".join(retrieved_texts)
-#     messages = [
-#         {"role": "system", "content": "You are a helpful financial assistant. Answer ONLY based on the provided context. Be concise. If the answer is not in the context, say 'Information not available.'"},
-#         {"role": "user", "content": f"Context:\n{context}\n\nQuestion:\n{query}\n\nDirect Answer:"}
-#     ]
-#     prompt = tokenizer_rag.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-#     response = rag_pipeline(prompt)
-#     return response[0]['generated_text'].strip()
+    response = rag_pipeline(prompt)
+    return response[0]['generated_text'].strip()
 
 #############################
 # RAFT Generative
 #############################
-def generate_raft_response(query, retrieved_texts, rag_pipeline, tokenizer_ft, extract_comparative_values_func, metric_aliases, years_found):
+def generate_raft_response(query, retrieved_texts, model_ft, tokenizer_ft, extract_comparative_values_func, metric_aliases, years_found):
+    """
+    Generates a response using the RAFT pipeline.
+    This corrected version uses the arguments passed into it, avoiding redundant work.
+    """
+    # 1. Use the retrieved_texts that are passed in directly.
     context_str = "\n".join(retrieved_texts)
 
-    # ... (Your existing comparative analysis logic)
+    # 2. Perform direct extraction using the provided context and helper functions.
+    query_lower = query.lower()
+    metric_key = next((k for k, aliases in metric_aliases.items() if any(alias in query_lower for alias in aliases)), None)
+    is_change_query = any(w in query_lower for w in ["change", "difference", "compare", "between", "year-on-year"])
 
+    # Attempt direct extraction for comparative questions.
+    if metric_key and len(years_found) == 2 and is_change_query:
+        # Use the function that was passed in as an argument.
+        values = extract_comparative_values_func(context_str, metric_aliases[metric_key])
+        if values:
+            later_val, earlier_val = values
+            change = later_val - earlier_val
+            # Return the calculated answer and high confidence.
+            return f"₹{change:,.2f}", context_str, None, 0.98
+
+    # 3. If direct extraction fails, fall back to the LLM using the provided model and tokenizer.
     messages = [
         {"role": "system", "content": "You are a financial analyst. Answer using ONLY the provided context. If a calculation is needed, perform it and provide only the final numerical result."},
         {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{query}\n\nDirect Numerical Answer:"}
     ]
-
     prompt = tokenizer_ft.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    inputs = tokenizer_ft(prompt, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(model_ft.device)
 
     try:
-        response = rag_pipeline.text_generation(
-            model="mistralai/Mistral-7B-Instruct-v0.1",
-            prompt=prompt,
-            max_new_tokens=64,
-            temperature=0.7
-        )
-        final_answer = response.strip()
+        with torch.no_grad():
+            outputs = model_ft.generate(**inputs, max_new_tokens=64, do_sample=False, pad_token_id=tokenizer_ft.eos_token_id)
+
+        generated_text = tokenizer_ft.decode(outputs[0], skip_special_tokens=True).strip()
+        # Assumes a 'clean_generated_answer' function is available.
+        final_answer = clean_generated_answer(generated_text)
         return final_answer, context_str, prompt, 0.7
     except Exception as e:
-        print(f"Error during RAFT API generation: {e}")
+        print(f"Error during RAFT generation: {e}")
         return "Information not available", context_str, None, 0.0
-# def generate_raft_response(query, retrieved_texts, model_ft, tokenizer_ft, extract_comparative_values_func, metric_aliases, years_found):
-#     """
-#     Generates a response using the RAFT pipeline.
-#     This corrected version uses the arguments passed into it, avoiding redundant work.
-#     """
-#     # 1. Use the retrieved_texts that are passed in directly.
-#     context_str = "\n".join(retrieved_texts)
-
-#     # 2. Perform direct extraction using the provided context and helper functions.
-#     query_lower = query.lower()
-#     metric_key = next((k for k, aliases in metric_aliases.items() if any(alias in query_lower for alias in aliases)), None)
-#     is_change_query = any(w in query_lower for w in ["change", "difference", "compare", "between", "year-on-year"])
-
-#     # Attempt direct extraction for comparative questions.
-#     if metric_key and len(years_found) == 2 and is_change_query:
-#         # Use the function that was passed in as an argument.
-#         values = extract_comparative_values_func(context_str, metric_aliases[metric_key])
-#         if values:
-#             later_val, earlier_val = values
-#             change = later_val - earlier_val
-#             # Return the calculated answer and high confidence.
-#             return f"₹{change:,.2f}", context_str, None, 0.98
-
-#     # 3. If direct extraction fails, fall back to the LLM using the provided model and tokenizer.
-#     messages = [
-#         {"role": "system", "content": "You are a financial analyst. Answer using ONLY the provided context. If a calculation is needed, perform it and provide only the final numerical result."},
-#         {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion:\n{query}\n\nDirect Numerical Answer:"}
-#     ]
-#     prompt = tokenizer_ft.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-#     inputs = tokenizer_ft(prompt, return_tensors="pt", padding=True, truncation=True, max_length=2048).to(model_ft.device)
-
-#     try:
-#         with torch.no_grad():
-#             outputs = model_ft.generate(**inputs, max_new_tokens=64, do_sample=False, pad_token_id=tokenizer_ft.eos_token_id)
-
-#         generated_text = tokenizer_ft.decode(outputs[0], skip_special_tokens=True).strip()
-#         # Assumes a 'clean_generated_answer' function is available.
-#         final_answer = clean_generated_answer(generated_text)
-#         return final_answer, context_str, prompt, 0.7
-#     except Exception as e:
-#         print(f"Error during RAFT generation: {e}")
-#         return "Information not available", context_str, None, 0.0
 
 #############################
 # Post Processing the generated text
