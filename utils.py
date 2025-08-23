@@ -14,7 +14,7 @@ from huggingface_hub import login
 
 
 # This is the most important function. It loads all heavy components and caches them.
-@st.cache_resource(ttl="Load Models and Data", show_spinner=False)
+@st.cache_resource
 def load_resources():
     """Loads all necessary models, tokenizers, and data indexes."""
     embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
@@ -23,6 +23,10 @@ def load_resources():
     with open("bm25_index_small.pkl", "rb") as f:
         bm25_index_small = pickle.load(f)
     faiss_index_small = faiss.read_index("faiss_index_small.bin")
+
+    # Authenticate with Hugging Face Hub (ensure you have set your token in the environment)
+    huggingface = st.secrets["huggingface"]
+    login(token=huggingface)
 
     # Load RAG Model from Hugging Face Hub
     model_name_rag = "mistralai/Mistral-7B-Instruct-v0.1"
