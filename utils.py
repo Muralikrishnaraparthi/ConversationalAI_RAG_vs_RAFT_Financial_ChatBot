@@ -10,8 +10,6 @@ from rank_bm25 import BM25Okapi
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
 import torch
 import json
-from huggingface_hub import login
-
 
 # This is the most important function. It loads all heavy components and caches them.
 @st.cache_resource
@@ -24,16 +22,13 @@ def load_resources():
         bm25_index_small = pickle.load(f)
     faiss_index_small = faiss.read_index("faiss_index_small.bin")
 
-    # Authenticate with Hugging Face Hub (ensure you have set your token in the environment)
-    huggingface = st.secrets["huggingface"]
-    login(token=huggingface)
-
     # Load RAG Model from Hugging Face Hub
     model_name_rag = "mistralai/Mistral-7B-Instruct-v0.1"
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16
     )
     tokenizer_rag = AutoTokenizer.from_pretrained(model_name_rag)
+    tokenizer_rag.pad_token = tokenizer_rag.eos_token
 
     # FIX: Removed the 'device_map="auto"' argument
     model_rag = AutoModelForCausalLM.from_pretrained(
@@ -46,6 +41,8 @@ def load_resources():
     # For simplicity, we'll use the base RAG model for the RAFT path in this deployment.
     model_ft = model_rag
     tokenizer_ft = tokenizer_rag
+    tokenizer_ft.pad_token = tokenizer_ft.eos_token # Fix padding token error
+
 
     # Load chunk data (ensure rag_chunks_data.json is uploaded)
     with open("rag_chunks_data.json", "r") as f:

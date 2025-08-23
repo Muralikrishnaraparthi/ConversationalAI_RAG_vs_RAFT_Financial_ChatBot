@@ -2,23 +2,22 @@ import streamlit as st
 import time
 import numpy as np
 from utils import (
-    load_resources, 
-    hybrid_retrieval, 
+    load_resources,
+    hybrid_retrieval,
     normalize_years_in_query,
     extract_comparative_values,
     generate_rag_response,
     generate_raft_response,
     postprocess_generated_text,
-    metric_aliases,
+    metric_aliases
 )
 
 # --- App Configuration ---
 st.set_page_config(
-    page_title="Group 99 | Financial QA", 
+    page_title="Group 99 | Financial QA",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
 
 # --- Load Models and Data ---
 with st.spinner("Loading financial models and data... This may take a moment on first startup."):
@@ -28,14 +27,14 @@ with st.spinner("Loading financial models and data... This may take a moment on 
 st.title("🤖 Group 99: Financial QA Chatbot")
 st.sidebar.header("Query Options")
 
-# FIX: Removed the unsupported 'caption' argument from the line below
+# FIXED: Removed the unsupported 'caption' argument
 mode_selection = st.sidebar.radio(
-    "Choose a Model:", 
+    "Choose a Model:",
     ("RAFT (Fine-Tuned)", "RAG (Base Model)")
 )
 mode = "RAFT" if "RAFT" in mode_selection else "RAG"
 
-st.sidebar.markdown("---") 
+st.sidebar.markdown("---")
 with st.sidebar.expander("Project Group Members"):
     st.markdown("""
     | Name                      | ID            |
@@ -55,10 +54,10 @@ if st.button("Get Answer"):
     else:
         with st.spinner("Finding relevant documents and generating an answer..."):
             start_time = time.time()
-            
+
             retrieved_docs, retrieved_texts, _ = hybrid_retrieval(query, index_sets, embedding_model, top_k=5)
             context_used = "\n".join(retrieved_texts)
-            
+
             if not retrieved_texts:
                 st.error("Could not find relevant context to answer this question.")
             else:
@@ -66,32 +65,22 @@ if st.button("Get Answer"):
                 raw_answer = None
                 model_confidence = 0.0
 
-                query_lower = query.lower()
-                metric_key = next((k for k, aliases in metric_aliases.items() if any(alias in query_lower for alias in aliases)), None)
-                is_change_query = any(w in query_lower for w in ["change", "difference", "compare", "between", "year-on-year"])
+                if mode == "RAFT":
+                    # FIXED: Pass correct parameters to generate_raft_response
+                    raw_answer, _, _, model_confidence = generate_raft_response(
+                        query,
+                        retrieved_texts,
+                        model_ft,          # FIXED: Use model_ft instead of rag_pipeline
+                        tokenizer_ft,      # FIXED: Use tokenizer_ft consistently
+                        extract_comparative_values,
+                        metric_aliases,
+                        years_found
+                    )
+                else: # RAG (Base Model)
+                    # FIXED: Use correct tokenizer variable name and improved function
+                    raw_answer = generate_rag_response(query, retrieved_texts, rag_pipeline, tokenizer_ft)
 
-                if metric_key and len(years_found) >= 2 and is_change_query:
-                    values = extract_comparative_values(context_used, metric_aliases[metric_key])
-                    if values:
-                        later_val, earlier_val = values
-                        change = later_val - earlier_val
-                        raw_answer = f"₹{change:,.2f}"
-                        model_confidence = 0.98
-
-                if raw_answer is None:
-                    if mode == "RAFT":
-                        raw_answer, _, _, _ = generate_raft_response(
-                            query, 
-                            retrieved_texts, 
-                            rag_pipeline, 
-                            tokenizer_ft,
-                            extract_comparative_values, 
-                            metric_aliases, 
-                            years_found
-                        )
-                    else: # RAG mode
-                        raw_answer = generate_rag_response(query, retrieved_texts, rag_pipeline, tokenizer_rag)
-
+                    # Calculate confidence from retrieval scores
                     scores = [doc.metadata.get('fused_score', 0) for doc in retrieved_docs]
                     model_confidence = np.mean(scores) if scores else 0.0
 
@@ -100,10 +89,10 @@ if st.button("Get Answer"):
 
                 st.success("Answer")
                 st.markdown(f"### {final_answer}")
-                
+
                 col1, col2 = st.columns(2)
                 col1.metric(label="Response Time", value=f"{end_time - start_time:.2f}s")
-                col2.metric(label="Confidence Score", value=f"{model_confidence:.2%}")
+                col2.metric(label="Context Relevance Score", value=f"{model_confidence:.2%}")
 
                 with st.expander("Show Retrieved Context"):
                     st.text(context_used)
