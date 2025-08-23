@@ -22,7 +22,7 @@ st.set_page_config(
 
 # --- Load Models and Data ---
 with st.spinner("Loading financial models and data... This may take a moment on first startup."):
-    embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft, tokenizer_rag = load_resources()
+    embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft = load_resources()
 
 # --- UI Components ---
 st.title("🤖 Group 99: Financial QA Chatbot")

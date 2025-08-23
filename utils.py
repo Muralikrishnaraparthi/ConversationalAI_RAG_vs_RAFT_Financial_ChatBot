@@ -10,10 +10,11 @@ from rank_bm25 import BM25Okapi
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
 import torch
 import json
-from huggingface_hub import login, InferenceClient
+from huggingface_hub import login
+
 
 # This is the most important function. It loads all heavy components and caches them.
-@st.cache_resource(ttl=86400)  # Cache for 24 hours
+@st.cache_resource(ttl="Load Models and Data", show_spinner=False)
 def load_resources():
     """Loads all necessary models, tokenizers, and data indexes."""
     embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
@@ -22,10 +23,6 @@ def load_resources():
     with open("bm25_index_small.pkl", "rb") as f:
         bm25_index_small = pickle.load(f)
     faiss_index_small = faiss.read_index("faiss_index_small.bin")
-
-        # Get Hugging Face token from Streamlit secrets
-    huggingface_token = st.secrets.get("huggingface")
-    login(token=huggingface_token)
 
     # Load RAG Model from Hugging Face Hub
     model_name_rag = "mistralai/Mistral-7B-Instruct-v0.1"
@@ -55,6 +52,7 @@ def load_resources():
 
     # Return all the loaded resources
     return embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft
+
 
 # ==============================================================================
 # HELPER FUNCTIONS BELOW THIS LINE
