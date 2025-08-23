@@ -1,0 +1,302 @@
+[
+    {
+        "question": "What was HDFC Bank's total revenue for the fiscal year ended March 31, 2024?",
+        "answer": "HDFC Bank's total revenue for the fiscal year ended March 31, 2024 was [find exact figure] (as per the Consolidated Statement of Profit and Loss).",
+        "source_fy": "23-24",
+        "source_section": "Consolidated Statement of Profit and Loss"
+    },
+    {
+        "question": "What were the total deposits of HDFC Bank as of March 31, 2023?",
+        "answer": "As of March 31, 2023, HDFC Bank's total deposits were [find exact figure] (from the Consolidated Balance Sheet).",
+        "source_fy": "22-23",
+        "source_section": "Consolidated Balance Sheet"
+    },
+    {
+        "question": "According to the Management Discussion and Analysis, what were the key factors contributing to the growth in Net Interest Income for HDFC Bank in fiscal year 2024?",
+        "answer": "The Management Discussion and Analysis for FY24 states that key factors contributing to Net Interest Income growth included [extract details from MD&A section].",
+        "source_fy": "23-24",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What was the Provision for Bad and Doubtful Debts for HDFC Bank in the fiscal year ended March 31, 2024?",
+        "answer": "The Provision for Bad and Doubtful Debts for HDFC Bank in FY24 was [find exact figure] (from the Notes to Consolidated Financial Statements).",
+        "source_fy": "23-24",
+        "source_section": "Notes to Consolidated Financial Statements"
+    },
+    {
+        "question": "What was HDFC Bank's Net Profit for the fiscal year ended March 31, 2025?",
+        "answer": "HDFC Bank's Net Profit for FY25 was \u20b967,347.4 crore (as per the Consolidated Statement of Profit and Loss).",
+        "source_fy": "24-25",
+        "source_section": "Consolidated Statement of Profit and Loss"
+    },
+    {
+        "question": "By how much did HDFC Bank's total advances grow year-on-year from FY24 to FY25?",
+        "answer": "HDFC Bank's total advances grew by 5.4% YoY from \u20b924,84,862 crore in FY24 to \u20b926,19,609 crore in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What was the Net Interest Margin (NIM) for HDFC Bank in FY25?",
+        "answer": "HDFC Bank reported a Net Interest Margin of 3.48% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What was the Core Net Interest Margin (NIM) in FY24?",
+        "answer": "In FY24, the Core Net Interest Margin was 3.53%.",
+        "source_fy": "23-24",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What was the Return on Assets (RoA) in FY25 compared to FY24?",
+        "answer": "RoA in FY25 was 1.91%, down from 1.98% in FY24.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was the Capital Adequacy Ratio (CAR) of HDFC Bank as of March 31, 2025?",
+        "answer": "As of March 31, 2025, HDFC Bank's Capital Adequacy Ratio was 19.6% (Tier I: 17.7%).",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "How did the Gross Non-Performing Assets (GNPA) ratio change from FY24 to FY25?",
+        "answer": "The GNPA ratio increased from 1.24% in FY24 to 1.33% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was HDFC Bank's Earnings Per Share (EPS) in FY25?",
+        "answer": "HDFC Bank's EPS in FY25 was \u20b988.3.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was the Bank\u2019s Dividend per Share for FY25?",
+        "answer": "The Dividend per Share for FY25 was \u20b922.0.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was the Bank\u2019s Total Deposits as of March 31, 2025?",
+        "answer": "As of March 31, 2025, Total Deposits stood at \u20b927,14,715 crore.",
+        "source_fy": "24-25",
+        "source_section": "Consolidated Balance Sheet"
+    },
+    {
+        "question": "What was the Return on Equity (ROE) for HDFC Bank in FY25?",
+        "answer": "The Return on Equity for FY25 was 14.6%.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "How many new branches were added by HDFC Bank in FY24?",
+        "answer": "In FY24, HDFC Bank added 925 new branches.",
+        "source_fy": "23-24",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What was the Cost to Income Ratio in FY24 compared to FY25?",
+        "answer": "The Cost to Income Ratio increased from 40.2% in FY24 to 40.5% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What was the value of Total Borrowings as of March 31, 2025?",
+        "answer": "As of March 31, 2025, Total Borrowings were \u20b96,34,606 crore.",
+        "source_fy": "24-25",
+        "source_section": "Consolidated Balance Sheet"
+    },
+    {
+        "question": "What amount of General Provisions was made by HDFC Bank in FY25?",
+        "answer": "HDFC Bank made General Provisions of \u20b9198.4 crore during FY25.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What was the total Net Revenue for FY23\u201324 and FY24\u201325?",
+        "answer": "Net Revenue was \u20b91,57,773.5 crore in FY24 and \u20b91,68,302.4 crore in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What were HDFC Bank\u2019s operating expenses in FY25?",
+        "answer": "Operating expenses were \u20b968,174.9 crore in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "How did the Other Income change from FY24 to FY25?",
+        "answer": "Other Income fell from \u20b949,241 crore in FY24 to \u20b945,632.3 crore in FY25, a decline of 7.33%.",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What were the recoveries from written-off accounts in FY25?",
+        "answer": "Recoveries from written-off accounts were \u20b93,785 crore in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Directors\u2019 Report"
+    },
+    {
+        "question": "What was the amount of Provisions and Contingencies in FY24?",
+        "answer": "In FY24, Provisions and Contingencies amounted to \u20b923,492.2 crore.",
+        "source_fy": "23-24",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "How much was HDFC Bank\u2019s Interest Earned in FY24?",
+        "answer": "HDFC Bank earned \u20b92,83,649.02 crore in interest in FY24.",
+        "source_fy": "23-24",
+        "source_section": "Consolidated Statement of Profit and Loss"
+    },
+    {
+        "question": "How much did HDFC Bank earn from Fees and Commissions in FY25?",
+        "answer": "Fees and Commissions revenue in FY25 was \u20b931,898.6 crore.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What was the Profit on Sale of Investments in FY24?",
+        "answer": "Profit on Revaluation and Sale of Investments in FY24 was \u20b911,526.1 crore.",
+        "source_fy": "23-24",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What is the minority interest reported in FY25?",
+        "answer": "Minority Interest stood at \u20b916,359.04 crore as of March 31, 2025.",
+        "source_fy": "24-25",
+        "source_section": "Consolidated Balance Sheet"
+    },
+    {
+        "question": "What was the Net NPA ratio in FY25?",
+        "answer": "The Net NPA ratio in FY25 was 0.43%.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What was the Provision Coverage Ratio in FY25?",
+        "answer": "The Provision Coverage Ratio including general and floating provisions was 172.1% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "How did employee costs change in FY25?",
+        "answer": "Employee costs rose in FY25 due to staff additions and annual wage revisions.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What was the Bank\u2019s EPS growth rate from FY24 to FY25?",
+        "answer": "EPS increased by 2.9% from \u20b985.8 in FY24 to \u20b988.3 in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was the change in RoE between FY24 and FY25?",
+        "answer": "RoE declined from 16.1% in FY24 to 14.6% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What is the classification policy for non-performing assets?",
+        "answer": "Non-performing assets are classified based on RBI guidelines, and provisions are made accordingly.",
+        "source_fy": "23-24",
+        "source_section": "Notes to Consolidated Financial Statements"
+    },
+    {
+        "question": "How many employees did HDFC Bank have as of FY25?",
+        "answer": "HDFC Bank had 2,14,521 employees as of FY25.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was the share of women in HDFC Bank's workforce in FY25?",
+        "answer": "In FY25, women comprised 26.1% of HDFC Bank's total workforce.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was the total amount spent on CSR initiatives in FY25?",
+        "answer": "HDFC Bank spent \u20b91,068 crore on CSR initiatives in FY25 under its Parivartan program.",
+        "source_fy": "24-25",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was the Gross NPA for Retail Loans in FY25?",
+        "answer": "The GNPA ratio for Retail Loans stood at 0.9% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Management Discussion and Analysis"
+    },
+    {
+        "question": "What percentage of HDFC Bank's transactions were digital in FY25?",
+        "answer": "97% of all financial transactions were conducted through digital channels in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was HDFC Bank\u2019s digital engagement volume in FY25?",
+        "answer": "In FY25, HDFC Bank had over 3.7 crore monthly digital engagements on its One platform.",
+        "source_fy": "24-25",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "How many new cities and towns did HDFC Bank reach by FY25?",
+        "answer": "HDFC Bank reached over 4,150 cities and towns by FY25.",
+        "source_fy": "24-25",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was the performance of HDFC Life in FY25?",
+        "answer": "HDFC Life secured over 7 crore lives and had a claim settlement ratio of 99.7% in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Power of the Group"
+    },
+    {
+        "question": "What was the total number of ATMs and Cash Recycler Machines operated by HDFC Bank in FY25?",
+        "answer": "HDFC Bank operated 21,139 ATMs and Cash Recycler Machines in FY25.",
+        "source_fy": "24-25",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was the earnings growth in HDFC AMC during FY25?",
+        "answer": "HDFC AMC recorded a PAT of \u20b91,945.9 crore in FY25, up 37% YoY.",
+        "source_fy": "24-25",
+        "source_section": "Power of the Group"
+    },
+    {
+        "question": "How did the asset quality of HDB Financial Services change in FY25?",
+        "answer": "HDBFSL's GNPA improved to 1.90% in FY25, down from 2.73% in FY24.",
+        "source_fy": "23-24",
+        "source_section": "Power of the Group"
+    },
+    {
+        "question": "How much of HDFC Bank\u2019s electricity mix came from renewable sources in FY25?",
+        "answer": "In FY25, renewable energy accounted for 3.22% of HDFC Bank\u2019s electricity mix, up from 0.39% in FY24.",
+        "source_fy": "24-25",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was the total amount of education and learning hours invested in employees in FY24?",
+        "answer": "HDFC Bank invested 66,54,452 learning hours in employee development during FY24.",
+        "source_fy": "23-24",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was the proposed dividend per share for FY24?",
+        "answer": "The proposed dividend per share for FY24 was \u20b919.5.",
+        "source_fy": "23-24",
+        "source_section": "Performance Snapshot"
+    },
+    {
+        "question": "What was HDFC Bank\u2019s total customer base in FY24?",
+        "answer": "HDFC Bank had a customer base of 9.32 crore in FY24.",
+        "source_fy": "23-24",
+        "source_section": "Highlights"
+    },
+    {
+        "question": "What was HDFC Bank\u2019s balance sheet size at the end of FY25 and how did it compare to FY24?",
+        "answer": "HDFC Bank\u2019s balance sheet size grew from \u20b936,17,623 crore in FY24 to \u20b939,10,199 crore in FY25, marking an 8.1% increase year-on-year.",
+        "source_fy": "24-25",
+        "source_section": "Performance Snapshot"
+    }
+]
