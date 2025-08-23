@@ -6,6 +6,8 @@ This project implements a Financial Question Answering (QA) Chatbot for HDFC Ban
 
 This command-line interface (CLI) application acts as a financial question-answering system that leverages two different models—a Retrieval-Augmented Generation (RAG) model and a fine-tuned RAFT (Retrieval-Augmented Fine-Tuning) model—to provide accurate answers based on financial documents.
 
+Refer Documentation of the project inference at <href="https://github.com/Muralikrishnaraparthi/ConversationalAI_RAG_vs_RAFT_Financial_ChatBot/blob/main/Group%2099%20Financial%20Chat%20Bot.pdf">Group 99 Financial Chat Bot.pdf</href>
+
 ## Project Members
 
 | Name | ID |
