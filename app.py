@@ -7,8 +7,9 @@ from utils import (
     normalize_years_in_query,
     extract_comparative_values,
     generate_rag_response,
+    generate_raft_response,
     postprocess_generated_text,
-    metric_aliases
+    metric_aliases,
 )
 
 # --- App Configuration ---
@@ -18,13 +19,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Access the Hugging Face token from the secrets file
-huggingface = st.secrets["huggingface"]
-NGROK_AUTH_TOKEN = st.secrets["NGROK_AUTH_TOKEN"]
 
 # --- Load Models and Data ---
 with st.spinner("Loading financial models and data... This may take a moment on first startup."):
-    embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft = load_resources()
+    embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft, tokenizer_rag = load_resources()
 
 # --- UI Components ---
 st.title("🤖 Group 99: Financial QA Chatbot")
@@ -81,7 +79,19 @@ if st.button("Get Answer"):
                         model_confidence = 0.98
 
                 if raw_answer is None:
-                    raw_answer = generate_rag_response(query, retrieved_texts, rag_pipeline, tokenizer_ft)
+                    if mode == "RAFT":
+                        raw_answer, _, _, _ = generate_raft_response(
+                            query, 
+                            retrieved_texts, 
+                            rag_pipeline, 
+                            tokenizer_ft,
+                            extract_comparative_values, 
+                            metric_aliases, 
+                            years_found
+                        )
+                    else: # RAG mode
+                        raw_answer = generate_rag_response(query, retrieved_texts, rag_pipeline, tokenizer_rag)
+
                     scores = [doc.metadata.get('fused_score', 0) for doc in retrieved_docs]
                     model_confidence = np.mean(scores) if scores else 0.0
 
