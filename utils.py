@@ -1,58 +1,119 @@
+import os, re, json, pickle
 import streamlit as st
-import re
-import numpy as np
-import pickle
+import torch
 import faiss
-from typing import List
-from langchain.schema import Document
+import numpy as np
 from sentence_transformers import SentenceTransformer
 from rank_bm25 import BM25Okapi
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
-import torch
-import json
+from typing import List
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
+from langchain_core.documents import Document
+from langchain.schema import Document
+from huggingface_hub import login
 
-# This is the most important function. It loads all heavy components and caches them.
-@st.cache_resource
+# NEW: peft for LoRA fallback
+from peft import PeftModel, PeftConfig
+
+# Optional: cache to avoid reloading on every rerun
+@st.cache_resource(show_spinner=False)
 def load_resources():
     """Loads all necessary models, tokenizers, and data indexes."""
+
+    # ---------- Embeddings / Indexes ----------
     embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
-    # Load FAISS and BM25 indexes (ensure these files are uploaded to Colab)
     with open("bm25_index_small.pkl", "rb") as f:
         bm25_index_small = pickle.load(f)
     faiss_index_small = faiss.read_index("faiss_index_small.bin")
 
-    # Load RAG Model from Hugging Face Hub
-    model_name_rag = "mistralai/Mistral-7B-Instruct-v0.1"
+    # ---------- HF Login ----------
+    hf_token = os.environ.get("huggingface") or st.secrets.get("huggingface", None)
+    if hf_token:
+        try:
+            from huggingface_hub import login
+            login(hf_token)
+        except Exception:
+            # don't hard-fail in Spaces if token already set
+            pass
+    else:
+        st.warning("Hugging Face token not found. Add it to Repo Secrets or .streamlit/secrets.toml")
+
+    # ---------- RAG base model (Mistral-7B) ----------
+    base_model_id = "mistralai/Mistral-7B-Instruct-v0.1"
     bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.bfloat16
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16
     )
-    tokenizer_rag = AutoTokenizer.from_pretrained(model_name_rag)
+
+    tokenizer_rag = AutoTokenizer.from_pretrained(base_model_id)
     tokenizer_rag.pad_token = tokenizer_rag.eos_token
 
-    # FIX: Removed the 'device_map="auto"' argument
+    # Use Accelerate placement; DO NOT pass device= in pipeline afterwards
     model_rag = AutoModelForCausalLM.from_pretrained(
-        model_name_rag,
-        quantization_config=bnb_config
+        base_model_id,
+        quantization_config=bnb_config,
+        device_map="auto",
+        torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
     )
 
-    rag_pipeline = pipeline("text-generation", model=model_rag, tokenizer=tokenizer_rag, max_new_tokens=256, temperature=0.1)
+    rag_pipeline = pipeline(
+        "text-generation",
+        model=model_rag,
+        tokenizer=tokenizer_rag,
+        # no device= here; Accelerate is already handling placement
+        max_new_tokens=256,
+        temperature=0.1
+    )
 
-    # For simplicity, we'll use the base RAG model for the RAFT path in this deployment.
-    model_ft = model_rag
-    tokenizer_ft = tokenizer_rag
-    tokenizer_ft.pad_token = tokenizer_ft.eos_token # Fix padding token error
+    # ---------- RAFT model / adapter ----------
+    # If this repo is a full merged model, it will load.
+    # If it's a LoRA adapter, we catch and load via Peft on top of the base model.
+    model_ft_id = "Muralikrishnaraparthi/Mistral-7B-HDFC-Finance-RAFT"
 
+    tokenizer_ft = AutoTokenizer.from_pretrained(base_model_id)
+    tokenizer_ft.pad_token = tokenizer_ft.eos_token
 
-    # Load chunk data (ensure rag_chunks_data.json is uploaded)
+    def load_raft_model():
+        # Try as a fully merged Transformers model first
+        try:
+            return AutoModelForCausalLM.from_pretrained(
+                model_ft_id,
+                quantization_config=bnb_config,
+                device_map="auto",
+                torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
+            )
+        except Exception:
+            # Fallback: treat as LoRA/PEFT adapter on top of base model
+            base_for_lora = AutoModelForCausalLM.from_pretrained(
+                base_model_id,
+                quantization_config=bnb_config,
+                device_map="auto",
+                torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
+            )
+            # Will fail cleanly if repo isn't a PEFT adapter
+            return PeftModel.from_pretrained(base_for_lora, model_ft_id)
+
+    model_ft = load_raft_model()
+
+    # ---------- RAG chunks ----------
     with open("rag_chunks_data.json", "r") as f:
         rag_data = json.load(f)
-    rag_chunks_small = [Document(page_content=d['page_content'], metadata=d['metadata']) for d in rag_data['small_chunks']]
+    rag_chunks_small = [
+        Document(page_content=d['page_content'], metadata=d['metadata'])
+        for d in rag_data['small_chunks']
+    ]
 
-    index_sets = {"small": {"faiss": faiss_index_small, "bm25": bm25_index_small, "chunks": rag_chunks_small}}
+    index_sets = {
+        "small": {
+            "faiss": faiss_index_small,
+            "bm25": bm25_index_small,
+            "chunks": rag_chunks_small
+        }
+    }
 
-    # Return all the loaded resources
     return embedding_model, index_sets, rag_pipeline, model_ft, tokenizer_ft
+
 
 
 # ==============================================================================
